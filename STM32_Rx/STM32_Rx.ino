@@ -22,13 +22,14 @@ RF24 radio(PB0, PA4); // CE, CSN on Blue Pill spi1 connection
 
 const uint64_t address = 0xF0F0F0F0E1LL;
 int count=0;
+int wait=1;
 // /*
 bool ledState = false;   // Variable to store the current state of the LED (false = off, true = on)
 // */
 void setup() 
 {
 Serial.begin(9600);
-int count=0;
+ 
 pinMode(PC13, OUTPUT);
 /*
 radio.powerDown();
@@ -86,12 +87,53 @@ else
   // Serial.println(count);
   delay(100);
     count = count+1;
-    if(count == 50) //100 * 30 3000 dealy
+    wait = wait+1;
+    if(wait >= 50) //100 * 30 3000 dealy
     {
     Serial.println("not available");
-   count = 0;
+    delay(50);
+  //  count = 0;
+    wait = 1;
     }   
-    
+    if(count >= 200){
+      restartRadio();
+      delay(100);
+      count = 0;
+    }
   }
 // */
+}
+
+void restartRadio() {
+    Serial.println("Attempting software radio restart...");
+    
+    // 1. Power down the radio gracefully
+    radio.powerDown();
+    delay(500); // Give it time to fully shut down
+
+    // 2. Power up the radio
+    radio.powerUp();
+    delay(50); // Wait for the chip to stabilize internally
+
+    // 3. Re-initialize the radio (Crucial steps from setup)
+    if (radio.begin()) {
+        radio.setDataRate(RF24_1MBPS); 
+        delay(100);
+        radio.setPALevel(RF24_PA_MIN); 
+        delay(100);
+        
+        // For Receiver:
+        radio.openReadingPipe(0, address);
+        delay(100);
+        radio.startListening();
+        delay(100);
+        
+        // For Transmitter:
+        // radio.openWritingPipe(address);
+        // radio.stopListening();
+        
+        Serial.println("Radio restart successful.");
+    } else {
+        Serial.println("Radio restart failed. Check power/connections.");
+    }
 }
