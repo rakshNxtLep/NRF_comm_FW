@@ -28,14 +28,37 @@ bool ledState = false;   // Variable to store the current state of the LED (fals
 void setup() 
 {
 Serial.begin(9600);
+int count=0;
+pinMode(PC13, OUTPUT);
+/*
+radio.powerDown();
+delay(500);
+radio.powerUp();
+delay(500); // Wait 100ms for the nRF24L01+ module to stabilize after power-on.
+*/
 radio.begin();
+delay(500); // Wait 100ms for the nRF24L01+ module to stabilize after power-on.
+if (!radio.begin()) {
+        Serial.println("FATAL: Radio module not detected or failed initialization.");
+        // Blink LED rapidly to indicate failure
+        while (1) {
+            digitalWrite(PC13, HIGH);
+            delay(50);
+            digitalWrite(PC13, LOW);
+            delay(50);
+        }
+    }
+    // Optional Debugging: Print hardware details
+    Serial.println("--- Radio Details ---");
+    radio.printDetails(); 
+    Serial.println("---------------------");
 Serial.print("ADDRESS :");
 Serial.println(address);
 radio.openReadingPipe(0, address);   //Setting the address at which we will receive the data
 radio.setPALevel(RF24_PA_MIN);       //You can set this as minimum or maximum depending on the distance between the transmitter and receiver.
 radio.startListening();              //This sets the module as receiver
-int count=0;
-pinMode(PC13, OUTPUT);
+
+
 }
 void loop()
 {
@@ -54,6 +77,7 @@ count = 0;
     ledState = !ledState;
     // Write the new LED state to the pin
   digitalWrite(PC13, ledState);
+  delay(300); // Short pulse to indicate TX success
   // */
 }
 // /*

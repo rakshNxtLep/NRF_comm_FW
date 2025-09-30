@@ -27,10 +27,20 @@ void setup()
 Serial.begin(9600);
 pinMode(PC13, OUTPUT);
 delay(100); // Wait 100ms for the nRF24L01+ module to stabilize after power-on.
-radio.begin();                  //Starting the Wireless communication
+/*
+radio.powerDown();
+delay(500);
+radio.powerUp();
+delay(500); // Wait 100ms for the nRF24L01+ module to stabilize after power-on.
+*/
+radio.begin();
+delay(500); // Wait 100ms for the nRF24L01+ module to stabilize after power-on.                  //Starting the Wireless communication
 radio.openWritingPipe(address); //Setting the address where we will send the data
+delay(100);
 radio.setPALevel(RF24_PA_MIN);  //You can set it as minimum or maximum depending on the distance between the transmitter and receiver.
+delay(500);
 radio.stopListening();          //This sets the module as transmitter
+delay(500);
 }
 
 void loop()
